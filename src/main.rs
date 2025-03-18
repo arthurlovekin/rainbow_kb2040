@@ -12,6 +12,7 @@ use adafruit_kb2040::entry;
 use core::iter::once;
 use embedded_hal::delay::DelayNs;
 use panic_halt as _;
+use rtt_target::{rtt_init_print, rprintln};
 
 use adafruit_kb2040::{
     hal::{
@@ -36,6 +37,8 @@ use ws2812_pio::Ws2812;
 /// the colour wheel in an infinite loop.
 #[entry]
 fn main() -> ! {
+    rtt_init_print!();
+
     // Configure the RP2040 peripherals
 
     let mut pac = pac::Peripherals::take().unwrap();
@@ -82,7 +85,7 @@ fn main() -> ! {
     loop {
         ws.write(brightness(once(wheel(n)), 32)).unwrap();
         n = n.wrapping_add(1);
-
+        rprintln!("Color: {}",n);
         timer.delay_ms(25);
     }
 }
