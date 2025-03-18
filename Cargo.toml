@@ -12,6 +12,8 @@ adafruit-kb2040 = "0.8.0"
 panic-halt = "0.2.0"
 smart-leds = "0.3.0"
 ws2812-pio = "0.8.0"
+bno055 = "0.4.0"
+fugit = "0.3.7"
 
 [dev-dependencies]
 heapless = "0.7.16"

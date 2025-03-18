@@ -9,6 +9,7 @@
 #![no_main]
 
 use adafruit_kb2040::entry;
+use fugit::RateExtU32; // Frequency trait for u32.kHz()
 use core::iter::once;
 use embedded_hal::delay::DelayNs;
 use panic_halt as _;
@@ -21,6 +22,7 @@ use adafruit_kb2040::{
         timer::Timer,
         watchdog::Watchdog,
         Sio,
+        i2c::I2C,
     },
     XOSC_CRYSTAL_FREQ,
 };
@@ -64,6 +66,36 @@ fn main() -> ! {
 
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
 
+    // Configure I2C communication to the BNO055
+    let mut i2c = I2C::i2c0(
+        pac.I2C0,
+        pins.a2.reconfigure(), //sda
+        pins.a3.reconfigure(), //scl
+        400.kHz(),
+        &mut pac.RESETS,
+        125_000_000.Hz(),
+    );
+
+    // // Scan for devices on the bus by attempting to read from them
+    // use embedded_hal_0_2::prelude::_embedded_hal_blocking_i2c_Read;
+    // for i in 0..=127u8 {
+    //     let mut readbuf: [u8; 1] = [0; 1];
+    //     let result = i2c.read(i, &mut readbuf);
+    //     if let Ok(d) = result {
+    //         // Do whatever work you want to do with found devices
+    //         // writeln!(uart, "Device found at address{:?}", i).unwrap();
+    //     }
+    // }
+
+// // Write some data to a device at 0x2c
+// use embedded_hal_0_2::prelude::_embedded_hal_blocking_i2c_Write;
+// i2c.write(0x2Cu8, &[1, 2, 3]).unwrap();
+
+// // Write and then read from a device at 0x3a
+// use embedded_hal_0_2::prelude::_embedded_hal_blocking_i2c_WriteRead;
+// let mut readbuf: [u8; 1] = [0; 1];
+// i2c.write_read(0x2Cu8, &[1, 2, 3], &mut readbuf).unwrap();
+
     // Configure the addressable LED
     let (mut pio, sm0, _, _, _) = pac.PIO0.split(&mut pac.RESETS);
 
@@ -84,6 +116,7 @@ fn main() -> ! {
         n = n.wrapping_add(1);
 
         timer.delay_ms(25);
+
     }
 }
 

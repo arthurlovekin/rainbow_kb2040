@@ -8,3 +8,5 @@ while you hold down the boot button.
 `cargo run` will automatically use elf2uf2-rs to convert .elf to .uf2 and upload to the board.
 
 [The Rusty Bits: Embedded Rust Setup Explained](https://www.youtube.com/watch?v=TOAynddiu5M)
+
+[Rp2040_HAL I2C](https://docs.rs/rp2040-hal/0.10.0/rp2040_hal/i2c/index.html)
