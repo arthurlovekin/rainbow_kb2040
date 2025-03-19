@@ -8,3 +8,6 @@ while you hold down the boot button.
 `cargo run` will automatically use elf2uf2-rs to convert .elf to .uf2 and upload to the board.
 
 [The Rusty Bits: Embedded Rust Setup Explained](https://www.youtube.com/watch?v=TOAynddiu5M)
+
+Use USB Serial if you don’t have a debugger. (example provided)
+Use RTT if you have an SWD debugger board and want fast logging without affecting USB.
