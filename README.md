@@ -9,5 +9,6 @@ while you hold down the boot button.
 
 [The Rusty Bits: Embedded Rust Setup Explained](https://www.youtube.com/watch?v=TOAynddiu5M)
 
-Use USB Serial if you don’t have a debugger. (example provided)
-Use RTT if you have an SWD debugger board and want fast logging without affecting USB.
+I'm using USB serial to pring debug statements. To see these outputs on your laptop, one option is to install PuTTY, and set a serial connection with 115200 baud rate. On Wondows, you can find the port with `mode | findstr "COM"`.
+
+An alternative to USB-serial would be to use RTT if you have an SWD debugger board and want fast logging without affecting USB.
