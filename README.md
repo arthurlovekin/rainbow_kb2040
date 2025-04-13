@@ -13,3 +13,7 @@ Made sure to keep all dependencies the same in Cargo.toml.
 Copied the config.toml and the memory.x file. Added vscode settings.json so rust-analyzer would work.
 
 [The Rusty Bits: Embedded Rust Setup Explained](https://www.youtube.com/watch?v=TOAynddiu5M)
+
+I'm using USB serial to pring debug statements. To see these outputs on your laptop, one option is to install PuTTY, and set a serial connection with 115200 baud rate. On Wondows, you can find the port with `mode | findstr "COM"`.
+
+An alternative to USB-serial would be to use RTT if you have an SWD debugger board and want fast logging without affecting USB.
