@@ -109,20 +109,29 @@ fn main() -> ! {
     // let mut timer = timer; // rebind to force a copy of the timer
 
     // Infinite Color-wheel and USB communication loop
-    loop {
+    let mut prev_time_sec = 0;
+    loop 
+    {
         // Get current time in seconds (timer ticks at 1MHz)
-        let current_time = (timer.get_counter().ticks() / 1_000_000) as u8;
-        // Use time directly as color wheel position
-        ws.write(brightness(once(wheel(current_time)), 32)).unwrap();
+        let time_ticks = timer.get_counter().ticks();
+        let time_sec = time_ticks / 1_000_000;
+
+        // Write LED Color wheel
+        let color_change_speed_factor = 100_000;
+        let color = wheel((time_ticks / color_change_speed_factor) as u8);
+        ws.write(brightness(once(color), 32)).unwrap();
 
         // A welcome message at the beginning
-        if !said_hello && timer.get_counter().ticks() >= 2_000_000 {
+        if !said_hello && time_sec >= 2 
+        {
             said_hello = true;
             let _ = serial.write(b"Hello, World!\r\n");
-
-            let time = timer.get_counter().ticks();
+        }
+        if time_sec-prev_time_sec >= 1
+        {
+            prev_time_sec = time_sec;
             let mut text: String<64> = String::new();
-            writeln!(&mut text, "Current timer ticks: {}", time).unwrap();
+            writeln!(&mut text, "Current timer ticks: {}, seconds: {}\r\n", time_ticks, time_sec).unwrap();
 
             // This only works reliably because the number of bytes written to
             // the serial port is smaller than the buffers available to the USB
@@ -132,7 +141,8 @@ fn main() -> ! {
         }
 
         // Check for new data
-        if usb_dev.poll(&mut [&mut serial]) {
+        if usb_dev.poll(&mut [&mut serial]) 
+        {
             let mut buf = [0u8; 64];
             match serial.read(&mut buf) {
                 Err(_e) => {
