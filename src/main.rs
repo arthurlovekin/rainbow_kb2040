@@ -11,7 +11,10 @@
 use adafruit_kb2040::entry;
 use fugit::RateExtU32; // Frequency trait for u32.kHz()
 use core::iter::once;
-// use embedded_hal::delay::DelayNs;
+// use embedded_hal::delay::DelayNs; // TODO: Issue between embedded-hal 0.2.x and 1.0.0
+// use embedded_hal_0_2::delay::DelayUs;
+// use embedded_hal_async::delay::DelayNs;
+// use embedded_hal::blocking::delay::DelayMs;
 use panic_halt as _;
 
 use adafruit_kb2040::{
@@ -75,36 +78,8 @@ fn main() -> ! {
 
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
 
-    // Configure I2C communication to the BNO055
-    let mut i2c = I2C::i2c0(
-        pac.I2C0,
-        pins.a2.reconfigure(), //sda
-        pins.a3.reconfigure(), //scl
-        400.kHz(),
-        &mut pac.RESETS,
-        125_000_000.Hz(),
-    );
-
-    // // Scan for devices on the bus by attempting to read from them
-    // use embedded_hal_0_2::prelude::_embedded_hal_blocking_i2c_Read;
-    // for i in 0..=127u8 {
-    //     let mut readbuf: [u8; 1] = [0; 1];
-    //     let result = i2c.read(i, &mut readbuf);
-    //     if let Ok(d) = result {
-    //         // Do whatever work you want to do with found devices
-    //         // writeln!(uart, "Device found at address{:?}", i).unwrap();
-    //     }
-    // }
-
-// // Write some data to a device at 0x2c
-// use embedded_hal_0_2::prelude::_embedded_hal_blocking_i2c_Write;
-// i2c.write(0x2Cu8, &[1, 2, 3]).unwrap();
-
-// // Write and then read from a device at 0x3a
-// use embedded_hal_0_2::prelude::_embedded_hal_blocking_i2c_WriteRead;
-// let mut readbuf: [u8; 1] = [0; 1];
-// i2c.write_read(0x2Cu8, &[1, 2, 3], &mut readbuf).unwrap();
-    // Set up the USB driver
+    /////////////////////////
+    // Set up the USB driver for serial communication
     let usb_bus = UsbBusAllocator::new(usb::UsbBus::new(
         pac.USBCTRL_REGS,
         pac.USBCTRL_DPRAM,
@@ -113,7 +88,6 @@ fn main() -> ! {
         &mut pac.RESETS,
     ));
 
-    /////////////////////////
     // Set up the USB Communications Class Device driver
     let mut serial = SerialPort::new(&usb_bus);
 
@@ -138,7 +112,33 @@ fn main() -> ! {
         clocks.peripheral_clock.freq(),
         timer.count_down(),
     );
-    // let mut timer = timer; // rebind to force a copy of the timer
+
+    // Configure I2C communication to the BNO055
+    let i2c = I2C::i2c0(
+        pac.I2C0,
+        pins.a2.reconfigure(), //sda
+        pins.a3.reconfigure(), //scl
+        400.kHz(),
+        &mut pac.RESETS,
+        125_000_000.Hz(),
+    );
+    
+    // Init BNO055 IMU
+    let mut imu = bno055::Bno055::new(i2c);
+    
+    // Initialize the IMU - use the timer's delay_ns method for nanosecond precision
+    let mut delay = timer;
+    if let Err(e) = imu.init(&mut delay) {
+        let mut text: String<64> = String::new();
+        writeln!(&mut text, "Failed to initialize IMU: {:?}\r\n", e).unwrap();
+        let _ = serial.write(text.as_bytes());
+    } else if let Err(e) = imu.set_mode(bno055::BNO055OperationMode::NDOF, &mut delay) {
+        let mut text: String<64> = String::new();
+        writeln!(&mut text, "Failed to set IMU mode: {:?}\r\n", e).unwrap();
+        let _ = serial.write(text.as_bytes());
+    } else {
+        let _ = serial.write(b"BNO055 IMU initialized successfully\r\n");
+    }
 
     // Infinite Color-wheel and USB communication loop
     let mut prev_time_sec = 0;
