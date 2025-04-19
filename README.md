@@ -18,3 +18,10 @@ Copied the config.toml and the memory.x file. Added vscode settings.json so rust
 I'm using USB serial to pring debug statements. To see these outputs on your laptop, one option is to install PuTTY, and set a serial connection with 115200 baud rate. On Wondows, you can find the port with `mode | findstr "COM"`.
 
 An alternative to USB-serial would be to use RTT if you have an SWD debugger board and want fast logging without affecting USB.
+
+Advantages of KB2040 board over the Pi Pico: 
+1. BOOT and RESET buttons so you don't have to keep plugging/unplugging usb
+2. Builtin NeoPixel LED
+3. Compact form-factor
+4. Qwiic connector
+2. USB-C
