@@ -170,6 +170,21 @@ fn main() -> ! {
             // peripheral. In general, the return value should be handled, so that
             // bytes not transferred yet don't get lost.
             let _ = serial.write(text.as_bytes());
+
+            // // Read IMU data
+            if let Ok(quat) = imu.quaternion() {
+                let mut text: String<64> = String::new();
+                writeln!(
+                    &mut text,
+                    "Quaternion w:{:.2}, x:{:.2}, y:{:.2}, z:{:.2}\r\n",
+                    quat.s, quat.v.x, quat.v.y, quat.v.z
+                ).unwrap();
+                let _ = serial.write(text.as_bytes());
+            }
+            else 
+            {
+                let _ = serial.write(b"Failed to read IMU data\r\n");
+            }
         }
 
         // Check for new data
